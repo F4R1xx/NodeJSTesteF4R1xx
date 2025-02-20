@@ -9,7 +9,9 @@ const cors = require('cors'); // 1) Importar o cors
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  // Caso ainda não tenha configurado, inclua seu Realtime Database URL:
+  // databaseURL: "https://SEU_PROJETO.firebaseio.com"
 });
 
 const app = express();
@@ -114,6 +116,41 @@ app.get('/users/:uid/timestamps', async (req, res) => {
   }
 });
 
+/**
+ * NOVA ROTA: Retorna o tamanho (em MB) dos dados de cada usuário
+ * que está salvo dentro do nó 'users' no Realtime Database.
+ */
+app.get('/users/size', async (req, res) => {
+  try {
+    // Referência ao Realtime Database
+    const db = admin.database();
+    const usersRef = db.ref('users');
+    
+    // Lê todos os usuários do nó "users"
+    const snapshot = await usersRef.once('value');
+    const sizes = {};
+
+    // Percorre cada UID e calcula o tamanho do JSON
+    snapshot.forEach(childSnapshot => {
+      const userId = childSnapshot.key;
+      const userData = childSnapshot.val();
+      
+      // Converte o objeto para JSON e mede em bytes
+      const jsonData = JSON.stringify(userData);
+      const sizeInBytes = Buffer.byteLength(jsonData, 'utf8');
+      
+      // Converte para MB
+      const sizeInMB = sizeInBytes / (1024 * 1024);
+      sizes[userId] = Number(sizeInMB.toFixed(2));
+    });
+
+    // Retorna um objeto: { uid1: 0.01, uid2: 0.54, ... }
+    res.json(sizes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erro ao calcular tamanho dos dados');
+  }
+});
 
 // Inicia o servidor na porta definida na variável de ambiente PORT ou na 3000
 const PORT = process.env.PORT || 3000;
@@ -121,4 +158,4 @@ app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
 
-module.exports = app;
+module.exports = app;
