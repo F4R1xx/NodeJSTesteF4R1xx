@@ -11,7 +11,7 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   // Caso ainda não tenha configurado, inclua seu Realtime Database URL:
-  // databaseURL: "https://SEU_PROJETO.firebaseio.com"
+  databaseURL: "https://agoradatabase-17954-default-rtdb.firebaseio.com"
 });
 
 const app = express();
