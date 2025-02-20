@@ -3,6 +3,7 @@ require('dotenv').config(); // Carrega as variáveis do arquivo .env
 const express = require('express');
 const bodyParser = require('body-parser');
 const admin = require('firebase-admin');
+const cors = require('cors'); // 1) Importar o cors
 
 // Obtém as credenciais do Firebase a partir da variável de ambiente
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
@@ -12,6 +13,9 @@ admin.initializeApp({
 });
 
 const app = express();
+
+// 2) Habilitar o CORS antes de definir as rotas
+app.use(cors());
 app.use(bodyParser.json());
 
 // Rota raiz para informar que a API está funcionando
@@ -99,4 +103,4 @@ app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
 
-module.exports = app;
+module.exports = app;
