@@ -97,6 +97,24 @@ app.get('/users', async (req, res) => {
   }
 });
 
+// Rota para retornar os timestamps de criação e último acesso de um usuário
+app.get('/users/:uid/timestamps', async (req, res) => {
+  try {
+    const userRecord = await admin.auth().getUser(req.params.uid);
+    const creationTime = userRecord.metadata.creationTime || "Indisponível";
+    const lastSignInTime = userRecord.metadata.lastSignInTime || "Nunca";
+
+    const htmlSnippet = `
+      <p>Data de Criação: ${creationTime}</p>
+      <p>Último Acesso: ${lastSignInTime}</p>
+    `;
+    res.send(htmlSnippet);
+  } catch (error) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+
 // Inicia o servidor na porta definida na variável de ambiente PORT ou na 3000
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
